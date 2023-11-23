@@ -14,7 +14,8 @@ import os, sys, math
 import numpy as np
 
 import threading
-sys.path.append('/home/puppypi/PuppyPI_ws/src/puppy_control/driver')
+sys.path.append('/home/puppypi/puppypi_ws/quadruped-robot-ros2/puppy_control/driver')
+# sys.path.append('/home/puppypi/puppypi_ws/src/puppy_control/driver')
 from PuppyPI_ControlCmd import ControlCmd
 from PuppyPI_ActionGroups import action_dic
 from PID import *
@@ -112,19 +113,25 @@ class Puppy(Node):
 # puppy cmd vel callback
     def cmd_vel_callback(self, msg):
         if abs(msg.linear.x) >= abs(msg.angular.z):
-            if np.sign(msg.linear.x) > 0:
+            if np.sign(round(msg.linear.x, 1)) > 0:
                 self.left_leg_move  = 1
                 self.right_leg_move = 1
-            else:
+            elif np.sign(round(msg.linear.x, 1)) < 0:
                 self.left_leg_move  = -1
                 self.right_leg_move = -1
+            else:
+                self.left_leg_move  = 0
+                self.right_leg_move = 0
         else:
-            if np.sign(msg.angular.z) > 0:
+            if np.sign(round(msg.angular.z, 1)) > 0:
                 self.left_leg_move  = -1
                 self.right_leg_move = 1
-            else:
+            elif np.sign(round(msg.angular.z, 1)) < 0:
                 self.left_leg_move  = 1
-                self.right_leg_move = -1 
+                self.right_leg_move = -1
+            else:
+                self.left_leg_move  = 0
+                self.right_leg_move = 0 
 
         self.control_cmd.puppy_move(self.left_leg_move, self.right_leg_move, self.leg_height)
 
