@@ -14,7 +14,8 @@ class ControlCmd:
         self.IK = PuppyIK()
         self.gait = PuppyGait()
         self.stance = PuppyStance()
-        self.config= PuppyConfiguration()
+        self.config = PuppyConfiguration()
+        self.h = self.config.puppy_height
         self.t = 0
         self.dt = 0.01
         self.speed = 1.5
@@ -25,10 +26,25 @@ class ControlCmd:
     def puppy_move(self, left_leg_move, right_leg_move, leg_height = 15):
         while self.t <= 1:
             foot_locations = self.gait.trot(self.t, self.speed*25, leg_height, left_leg_move, left_leg_move, right_leg_move, right_leg_move)
+
+            if   (left_leg_move+right_leg_move) > 0:
+                foot_locations_offset = self.stance.cal_attitude(0, 0, 0, self.speed*10, self.h)
+                foot_locations[0] += foot_locations_offset[0]
+
+            elif (left_leg_move+right_leg_move) < 0:
+                foot_locations_offset = self.stance.cal_attitude(0, 0, 0, self.speed*20, self.h)
+                foot_locations[0] -= foot_locations_offset[0]
+
+            elif (left_leg_move+right_leg_move) == 0:    #原地旋转
+                foot_locations_offset = self.stance.cal_attitude(0, 0, 0, self.speed*10, self.h)
+                foot_locations[0] -= foot_locations_offset[0]
+
+            else:
+                pass
+
             joint_angles = self.IK.leg_inverse_kinematics(foot_locations)
-            
             self.servo_PWM.set_actuator_positions(joint_angles)
-            time.sleep(0.001)
+            time.sleep(0.0005)
             self.t += self.dt
         self.t = 0
 
@@ -57,7 +73,6 @@ class ControlCmd:
                 foot_locations[i] = float(value)
             foot_locations = foot_locations.reshape(3,4)
             self.pose_control(foot_locations, target_use_time = action_list[action_num][1])
-            # print(foot_locations)
 
     def init_stance(self):
         for i in range(40,85,5):
@@ -68,7 +83,7 @@ class ControlCmd:
 
 if __name__ == "__main__":
     pass
-    # control_cmd = ControlCmd()
+    control_cmd = ControlCmd()
     # time.sleep(1)
     # # target = np.array([[   0.,    -40.,    -40.,    0.],
     # #                                     [-50., -40., -40., -50.],
@@ -148,8 +163,8 @@ if __name__ == "__main__":
     # controlcmd.allServoRelease()
     # t = 0
     # dt = 0.01
-    # while True:
-    #         control_cmd.puppy_move(1, 1, 15)
-    #         time.sleep(0.001)
+    while True:
+            control_cmd.puppy_move(1, 1, 12)
+            time.sleep(0.001)
             # print(state.joint_angles)
             # print(state.foot_locations)
