@@ -14,7 +14,9 @@ import os, sys, math
 import numpy as np
 
 import threading
-sys.path.append('/home/puppypi/puppypi_ws/quadruped-robot-ros2/puppy_control/driver')
+
+
+sys.path.append('/home/ubuntu/puppypi_ws/quadruped-robot-ros2/puppy_control/driver')
 # sys.path.append('/home/puppypi/puppypi_ws/src/puppy_control/driver')
 from PuppyPI_ControlCmd import ControlCmd
 from PuppyPI_ActionGroups import action_dic
